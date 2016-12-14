@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from decouple import config, Csv
+from dj_database_url import parse as dburl
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,9 +27,9 @@ SECRET_KEY = '+%3ajip&k(l3fwymrweif^)v1ar)y(z9r)@)zni1q=ja409g!8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=Csv())
 
-
+DEFAULT_FROM_EMAIL = 'sys@liquuid.me'
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_auth',
+    'zerei.core',
+
 ]
 
 MIDDLEWARE = [
@@ -59,6 +66,9 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+
+
+
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -74,11 +84,10 @@ WSGI_APPLICATION = 'zerei.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+default_dburl = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': config('DATABASE_URL', default=default_dburl, cast=dburl),
 }
 
 
@@ -100,6 +109,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'social_auth.backends.facebook.FacebookBackend',
+)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -119,3 +132,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+FACEBOOK_APP_ID              = ''
+FACEBOOK_API_SECRET          = ''
+
+LOGIN_URL          = '/login-form/'
+LOGIN_REDIRECT_URL = '/logged-in/'
+LOGIN_ERROR_URL    = '/login-error/'
+
+
+
+
+# Email configuration
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
